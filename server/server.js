@@ -6,6 +6,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { configureDiscordAuth, ensureAuthenticated } from "./auth.js";
 import {
+  upsertGameMapping,
+  removeGameMapping,
+  findGameMapping,
+  searchGameMappings,
+  logDownloadEvent,
+  createTicket,
+  listTickets,
+} from "./store.js";
+import { isDbEnabled } from "./db.js";
+import {
   loadLocalGames,
   searchLocal,
   searchDrive,
@@ -32,16 +42,46 @@ const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_CALLBACK_URL = process.env.DISCORD_CALLBACK_URL;
 const DISCORD_ALLOWED_GUILD = process.env.DISCORD_ALLOWED_GUILD;
+const SUPPORT_WEBHOOK_URL = process.env.SUPPORT_WEBHOOK_URL;
 const GOOGLE_FOLDER_ID = process.env.GOOGLE_FOLDER_ID;
 const GOOGLE_SERVICE_ACCOUNT_PATH =
   process.env.GOOGLE_SERVICE_ACCOUNT_PATH || "./service-account.json";
 const DRIVE_MODE = process.env.DRIVE_MODE || "local";
 const IS_PROD = process.env.NODE_ENV === "production";
 const USER_STORE_ENABLED = isUserStoreEnabled();
+const DB_ENABLED = isDbEnabled();
+const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 120); // requests per 5 minutes
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
+const rateBuckets = new Map();
 
 let localGames = [];
 if (IS_PROD) {
   app.set("trust proxy", 1);
+}
+
+function rateLimit(req, res, next) {
+  if (RATE_LIMIT_MAX <= 0) return next();
+  const key = req.ip || req.headers["x-forwarded-for"] || "unknown";
+  const now = Date.now();
+  const bucket = rateBuckets.get(key) || { count: 0, start: now };
+  if (now - bucket.start > RATE_LIMIT_WINDOW_MS) {
+    bucket.count = 0;
+    bucket.start = now;
+  }
+  bucket.count += 1;
+  rateBuckets.set(key, bucket);
+  if (bucket.count > RATE_LIMIT_MAX) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+  return next();
+}
+
+function ensureAdmin(req, res, next) {
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (req.user?.role === "admin") return next();
+  return res.status(403).json({ error: "Forbidden" });
 }
 
 function mergeGames(baseGames, extraGames) {
@@ -137,6 +177,7 @@ async function searchSteamAppsByName(query, limit = 80) {
 }
 
 app.use(express.json());
+app.use(rateLimit);
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -254,16 +295,41 @@ app.get("/api/search", async (req, res) => {
   }
 
   try {
+    let dbMatches = [];
+    if (DB_ENABLED) {
+      dbMatches = await searchGameMappings(query, { limit: 80 });
+    }
+
     if (DRIVE_MODE === "drive") {
       if (!GOOGLE_FOLDER_ID) {
         return res.status(400).json({ error: "Missing GOOGLE_FOLDER_ID" });
       }
-      let results = await searchDrive({
+      const driveResults = await searchDrive({
         folderId: GOOGLE_FOLDER_ID,
         query,
         serviceAccountPath: GOOGLE_SERVICE_ACCOUNT_PATH,
         localGames,
       });
+      let results = driveResults;
+
+      if (dbMatches.length) {
+        const merged = mergeResults(
+          dbMatches.map((g) => ({
+            id: g.fileId || g.appId,
+            appId: g.appId,
+            name: g.name,
+            gameName: g.name,
+            art:
+              g.art ||
+              `https://cdn.akamai.steamstatic.com/steam/apps/${g.appId}/header.jpg`,
+            size: g.sizeBytes || null,
+            fileId: g.fileId || null,
+          })),
+          driveResults
+        );
+        results = merged;
+      }
+
       if (!/^\d+$/.test(query.trim()) && results.length < 5) {
         const steamMatches = await searchSteamAppsByName(query, 120);
         if (steamMatches.length) {
@@ -297,11 +363,29 @@ app.get("/api/search", async (req, res) => {
       return res.json({ results, source: "drive" });
     }
 
-    let results = searchLocal(localGames, query).map((game) => ({
+    let results = [];
+
+    if (dbMatches.length) {
+      results = dbMatches.map((g) => ({
+        id: g.fileId || g.appId,
+        appId: g.appId,
+        name: g.name,
+        gameName: g.name,
+        art:
+          g.art ||
+          `https://cdn.akamai.steamstatic.com/steam/apps/${g.appId}/header.jpg`,
+        size: g.sizeBytes || null,
+        fileId: g.fileId || null,
+      }));
+    }
+
+    const localResults = searchLocal(localGames, query).map((game) => ({
       name: game.name,
       appId: game.appId,
       id: game.appId,
     }));
+    results = mergeResults(results, localResults);
+
     if (!/^\d+$/.test(query.trim()) && results.length < 5) {
       const steamMatches = await searchSteamAppsByName(query, 40);
       const steamResults = steamMatches.map((game) => ({
@@ -347,6 +431,28 @@ app.get("/api/steam-app", async (req, res) => {
   return res.json({ app: details });
 });
 
+app.get("/api/admin/games", ensureAuthenticated, ensureAdmin, async (req, res) => {
+  const q = String(req.query.q || "").trim();
+  const results = DB_ENABLED ? await searchGameMappings(q || "", { limit: 200 }) : [];
+  res.json({ results });
+});
+
+app.post("/api/admin/games", ensureAuthenticated, ensureAdmin, async (req, res) => {
+  if (!DB_ENABLED) return res.status(501).json({ error: "Database disabled" });
+  const { appId, name, fileId, sizeBytes, art } = req.body || {};
+  if (!appId || !fileId) return res.status(400).json({ error: "appId and fileId required" });
+  const doc = await upsertGameMapping({ appId, name, fileId, sizeBytes, art });
+  res.json({ mapping: doc });
+});
+
+app.delete("/api/admin/games/:appId", ensureAuthenticated, ensureAdmin, async (req, res) => {
+  if (!DB_ENABLED) return res.status(501).json({ error: "Database disabled" });
+  const appId = req.params.appId;
+  if (!appId) return res.status(400).json({ error: "appId required" });
+  await removeGameMapping(appId);
+  res.json({ ok: true });
+});
+
 app.get("/api/download", ensureAuthenticated, async (req, res) => {
   try {
     const requestedId = String(req.query.id || "");
@@ -375,6 +481,12 @@ app.get("/api/download", ensureAuthenticated, async (req, res) => {
       if (USER_STORE_ENABLED && req.user?.id) {
         consumeDailyUse(req.user.id).catch(() => {});
       }
+      logDownloadEvent({
+        userId: req.user?.id,
+        appId: requestedId,
+        fileId: requestedId,
+        status: "demo",
+      }).catch(() => {});
       return;
     }
 
@@ -383,6 +495,16 @@ app.get("/api/download", ensureAuthenticated, async (req, res) => {
     }
 
     let fileId = requestedId;
+    let appIdForLog = requestedId;
+
+    if (DB_ENABLED && /^\d+$/.test(requestedId)) {
+      const mapping = await findGameMapping(requestedId);
+      if (mapping?.fileId) {
+        fileId = mapping.fileId;
+        appIdForLog = mapping.appId || requestedId;
+      }
+    }
+
     if (/^\d+$/.test(requestedId)) {
       const files = await loadDriveFiles({
         folderId: GOOGLE_FOLDER_ID,
@@ -404,9 +526,55 @@ app.get("/api/download", ensureAuthenticated, async (req, res) => {
     if (USER_STORE_ENABLED && req.user?.id) {
       consumeDailyUse(req.user.id).catch(() => {});
     }
+    logDownloadEvent({
+      userId: req.user?.id,
+      appId: appIdForLog,
+      fileId,
+      status: "ok",
+    }).catch(() => {});
   } catch (error) {
+    logDownloadEvent({
+      userId: req.user?.id,
+      appId: String(req.query.id || ""),
+      fileId: null,
+      status: "error",
+    }).catch(() => {});
     res.status(500).json({ error: "Download failed" });
   }
+});
+
+app.post("/api/support", ensureAuthenticated, async (req, res) => {
+  try {
+    if (!DB_ENABLED) return res.status(501).json({ error: "Support storage disabled" });
+    const topic = String(req.body?.topic || "").trim() || "General";
+    const body = String(req.body?.body || "").trim();
+    const ticket = await createTicket({
+      userId: req.user?.id,
+      username: req.user?.username,
+      topic,
+      body,
+    });
+
+    if (SUPPORT_WEBHOOK_URL) {
+      fetch(SUPPORT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `New support ticket from ${req.user?.username || "user"} (${req.user?.id || "unknown"}): ${topic}\n${body}`,
+        }),
+      }).catch(() => {});
+    }
+
+    res.json({ ticket });
+  } catch (error) {
+    res.status(500).json({ error: "Support request failed" });
+  }
+});
+
+app.get("/api/admin/tickets", ensureAuthenticated, ensureAdmin, async (req, res) => {
+  if (!DB_ENABLED) return res.status(501).json({ error: "Ticket storage disabled" });
+  const tickets = await listTickets({ limit: 200 });
+  res.json({ tickets });
 });
 
 app.get("/health", (req, res) => {

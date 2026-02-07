@@ -1,8 +1,6 @@
-import { MongoClient } from "mongodb";
+import { getCollection as getDbCollection, isDbEnabled } from "./db.js";
 
 let cachedConfig = null;
-let cachedClient = null;
-let cachedClientPromise = null;
 
 function trim(value) {
   return String(value || "").trim();
@@ -39,16 +37,14 @@ function isAdminUserId(userIdRaw) {
 function getConfig() {
   if (cachedConfig !== null) return cachedConfig;
 
-  const uri = trim(process.env.MONGODB_URI);
-  const dbName = trim(process.env.MONGODB_DB);
   const usersCollection = trim(process.env.MONGODB_USERS_COLLECTION) || "users";
 
-  if (!uri || !dbName) {
+  if (!isDbEnabled()) {
     cachedConfig = null;
     return cachedConfig;
   }
 
-  cachedConfig = { uri, dbName, usersCollection };
+  cachedConfig = { usersCollection };
   return cachedConfig;
 }
 
@@ -56,31 +52,10 @@ export function isUserStoreEnabled() {
   return Boolean(getConfig());
 }
 
-async function getCollection() {
+async function getUsersCollection() {
   const config = getConfig();
   if (!config) return null;
-
-  if (cachedClient) {
-    return cachedClient.db(config.dbName).collection(config.usersCollection);
-  }
-
-  if (!cachedClientPromise) {
-    const client = new MongoClient(config.uri, {
-      maxPoolSize: 8,
-      serverSelectionTimeoutMS: 8000,
-    });
-    cachedClientPromise = client.connect();
-  }
-
-  try {
-    cachedClient = await cachedClientPromise;
-  } catch (err) {
-    cachedClientPromise = null;
-    cachedClient = null;
-    throw err;
-  }
-
-  return cachedClient.db(config.dbName).collection(config.usersCollection);
+  return getDbCollection(config.usersCollection);
 }
 
 function toPublicProfile(doc) {
@@ -101,7 +76,7 @@ function toPublicProfile(doc) {
 }
 
 export async function upsertUserProfile(user, options = {}) {
-  const collection = await getCollection();
+  const collection = await getUsersCollection();
   if (!collection) return null;
 
   const userId = trim(user?.id);
@@ -145,7 +120,7 @@ export async function upsertUserProfile(user, options = {}) {
 }
 
 export async function getUserProfile(userIdRaw) {
-  const collection = await getCollection();
+  const collection = await getUsersCollection();
   if (!collection) return null;
 
   const userId = trim(userIdRaw);
@@ -194,7 +169,7 @@ export async function getUserProfile(userIdRaw) {
 }
 
 export async function checkDailyUse(userIdRaw) {
-  const collection = await getCollection();
+  const collection = await getUsersCollection();
   if (!collection) {
     return { allowed: true, remaining: null, reason: null };
   }
@@ -220,7 +195,7 @@ export async function checkDailyUse(userIdRaw) {
 }
 
 export async function consumeDailyUse(userIdRaw) {
-  const collection = await getCollection();
+  const collection = await getUsersCollection();
   if (!collection) {
     return { allowed: true, remaining: null, reason: null };
   }

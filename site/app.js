@@ -26,6 +26,7 @@ let activeSuggestionIndex = -1;
 let suggestionBox = null;
 let suggestionTimer = null;
 let suggestionSeq = 0;
+const SUPPORT_TOPICS = ["Game file", "Site not working", "Error on launch", "Can't join giveaway", "Online", "Others"];
 const ROMAN_NUMERALS = {
   i: "1",
   ii: "2",
@@ -155,6 +156,19 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function formatSize(bytes) {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const units = ["B", "KB", "MB", "GB"];
+  let size = n;
+  let idx = 0;
+  while (size >= 1024 && idx < units.length - 1) {
+    size /= 1024;
+    idx += 1;
+  }
+  return `${size.toFixed(size >= 10 ? 0 : 1)} ${units[idx]}`;
 }
 
 function ensureSuggestionBox() {
@@ -526,6 +540,7 @@ async function renderPillResults(results) {
       const label = resultLabel(item);
       const fileRef = item.id || item.appId || item.name || "";
       const art = item.art || (await resolveArt(label.appId));
+      const sizeLabel = formatSize(item.size || item.sizeBytes);
       return `
         <div class="game-card" style="--game-art: url('${escapeHtml(art)}')">
           <div class="game-card-header">
@@ -536,8 +551,8 @@ async function renderPillResults(results) {
             <div class="game-card-media-title">${escapeHtml(label.title)}</div>
             <div class="game-card-footer">
               <div class="game-card-icons">
-                <span class="meta-icon chat" aria-hidden="true"></span>
-                <span class="meta-icon warn" aria-hidden="true"></span>
+                <span class="meta-icon chat" aria-label="Support chat"></span>
+                ${sizeLabel ? `<span class="meta-icon warn" aria-label="File size">${escapeHtml(sizeLabel)}</span>` : `<span class="meta-icon warn" aria-hidden="true"></span>`}
               </div>
               <button class="game-card-btn primary" data-file="${escapeHtml(fileRef)}" data-label="${escapeHtml(label.title)}">Download</button>
               <button class="game-card-btn ghost" data-action="request-update">Request Update</button>
@@ -748,6 +763,31 @@ async function handleDownload(fileId, label = "Unknown") {
   URL.revokeObjectURL(url);
 }
 
+async function submitSupport(topic) {
+  const chosen = topic || "Other";
+  const detail = prompt(`Describe the issue (${chosen}):`, "");
+  if (detail === null) return;
+  if (!(await checkApi())) {
+    alert("API unavailable. Please sign in first.");
+    return;
+  }
+  try {
+    const res = await fetch("/api/support", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: chosen, body: detail }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Support request failed");
+      return;
+    }
+    alert("Support ticket submitted.");
+  } catch (err) {
+    alert("Support request failed");
+  }
+}
+
 document.body.addEventListener("click", (event) => {
   const suggestionTarget = event.target.closest("[data-suggest-index]");
   if (suggestionTarget) {
@@ -781,7 +821,8 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (action === "support") {
-    alert("Support steps opened. (Demo mode)");
+    const topic = actionTarget.textContent || "Support";
+    submitSupport(topic);
     return;
   }
   if (action === "support-close") {
