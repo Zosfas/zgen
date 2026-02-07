@@ -1,4 +1,5 @@
 import { getCollection as getDbCollection, isDbEnabled } from "./db.js";
+import { getFirestore, isFirebaseEnabled, serverTimestamp } from "./firebase.js";
 
 let cachedConfig = null;
 
@@ -39,7 +40,7 @@ function getConfig() {
 
   const usersCollection = trim(process.env.MONGODB_USERS_COLLECTION) || "users";
 
-  if (!isDbEnabled()) {
+  if (!isDbEnabled() && !isFirebaseEnabled()) {
     cachedConfig = null;
     return cachedConfig;
   }
@@ -55,6 +56,12 @@ export function isUserStoreEnabled() {
 async function getUsersCollection() {
   const config = getConfig();
   if (!config) return null;
+
+  if (isFirebaseEnabled()) {
+    const db = getFirestore();
+    return db ? db.collection(config.usersCollection) : null;
+  }
+
   return getDbCollection(config.usersCollection);
 }
 
@@ -86,37 +93,64 @@ export async function upsertUserProfile(user, options = {}) {
   const today = todayKey(now);
   const source = trim(options.source) || "unknown";
 
-  const existing = await collection.findOne({ userId });
-  const usesLeftToday =
-    existing && trim(existing.usesDate) === today
-      ? toNumber(existing.usesLeftToday, defaultDailyUses())
-      : defaultDailyUses();
-  const isAdmin = isAdminUserId(userId);
+  if (isFirebaseEnabled()) {
+    const docRef = collection.doc(userId);
+    const snap = await docRef.get();
+    const existing = snap.exists ? snap.data() : null;
+    const usesLeftToday =
+      existing && trim(existing.usesDate) === today
+        ? toNumber(existing.usesLeftToday, defaultDailyUses())
+        : defaultDailyUses();
+    const isAdmin = isAdminUserId(userId);
 
-  const update = {
-    userId,
-    username: trim(user.username) || "Unknown",
-    discriminator: trim(user.discriminator) || "0000",
-    avatar: user.avatar || null,
-    source,
-    usesDate: today,
-    usesLeftToday,
-    role: isAdmin ? "admin" : existing?.role || null,
-    banned: Boolean(existing?.banned),
-    lastLoginAt: now,
-    updatedAt: now,
-  };
+    const update = {
+      userId,
+      username: trim(user.username) || "Unknown",
+      discriminator: trim(user.discriminator) || "0000",
+      avatar: user.avatar || null,
+      source,
+      usesDate: today,
+      usesLeftToday,
+      role: isAdmin ? "admin" : existing?.role || null,
+      banned: Boolean(existing?.banned),
+      lastLoginAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    };
+    await docRef.set({ ...update, createdAt: existing?.createdAt || serverTimestamp() }, { merge: true });
+    return toPublicProfile(update);
+  } else {
+    const existing = await collection.findOne({ userId });
+    const usesLeftToday =
+      existing && trim(existing.usesDate) === today
+        ? toNumber(existing.usesLeftToday, defaultDailyUses())
+        : defaultDailyUses();
+    const isAdmin = isAdminUserId(userId);
 
-  await collection.updateOne(
-    { userId },
-    {
-      $set: update,
-      $setOnInsert: { createdAt: now },
-    },
-    { upsert: true }
-  );
+    const update = {
+      userId,
+      username: trim(user.username) || "Unknown",
+      discriminator: trim(user.discriminator) || "0000",
+      avatar: user.avatar || null,
+      source,
+      usesDate: today,
+      usesLeftToday,
+      role: isAdmin ? "admin" : existing?.role || null,
+      banned: Boolean(existing?.banned),
+      lastLoginAt: now,
+      updatedAt: now,
+    };
 
-  return toPublicProfile(update);
+    await collection.updateOne(
+      { userId },
+      {
+        $set: update,
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true }
+    );
+
+    return toPublicProfile(update);
+  }
 }
 
 export async function getUserProfile(userIdRaw) {
@@ -126,37 +160,63 @@ export async function getUserProfile(userIdRaw) {
   const userId = trim(userIdRaw);
   if (!userId) return null;
 
-  const doc = await collection.findOne({ userId });
-  if (!doc) return null;
+  let doc = null;
+  if (isFirebaseEnabled()) {
+    const snap = await collection.doc(userId).get();
+    if (!snap.exists) return null;
+    doc = snap.data();
+  } else {
+    doc = await collection.findOne({ userId });
+    if (!doc) return null;
+  }
 
   const now = new Date();
   const today = todayKey(now);
   if (isAdminUserId(userId) && trim(doc.role) !== "admin") {
-    await collection.updateOne(
-      { userId },
-      {
-        $set: {
-          role: "admin",
-          updatedAt: now,
-        },
-      }
-    );
-    doc.role = "admin";
+    if (isFirebaseEnabled()) {
+      await collection.doc(userId).set(
+        { role: "admin", updatedAt: now.toISOString() },
+        { merge: true }
+      );
+      doc.role = "admin";
+    } else {
+      await collection.updateOne(
+        { userId },
+        {
+          $set: {
+            role: "admin",
+            updatedAt: now,
+          },
+        }
+      );
+      doc.role = "admin";
+    }
   }
 
   const currentUses = toNumber(doc.usesLeftToday, defaultDailyUses());
   if (trim(doc.usesDate) !== today || !Number.isFinite(currentUses)) {
     const nextUses = defaultDailyUses();
-    await collection.updateOne(
-      { userId },
-      {
-        $set: {
+    if (isFirebaseEnabled()) {
+      await collection.doc(userId).set(
+        {
           usesDate: today,
           usesLeftToday: nextUses,
-          updatedAt: now,
+          updatedAt: now.toISOString(),
         },
-      }
-    );
+        { merge: true }
+      );
+    } else {
+      await collection.updateOne(
+        { userId },
+        {
+          $set: {
+            usesDate: today,
+            usesLeftToday: nextUses,
+            updatedAt: now,
+          },
+        }
+      );
+    }
 
     return toPublicProfile({
       ...doc,
@@ -205,15 +265,25 @@ export async function consumeDailyUse(userIdRaw) {
   if (!Number.isFinite(check.remaining)) return check;
 
   const remaining = Math.max(0, Number(check.remaining) - 1);
-  await collection.updateOne(
-    { userId: trim(userIdRaw) },
-    {
-      $set: {
+  if (isFirebaseEnabled()) {
+    await collection.doc(trim(userIdRaw)).set(
+      {
         usesLeftToday: remaining,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       },
-    }
-  );
+      { merge: true }
+    );
+  } else {
+    await collection.updateOne(
+      { userId: trim(userIdRaw) },
+      {
+        $set: {
+          usesLeftToday: remaining,
+          updatedAt: new Date(),
+        },
+      }
+    );
+  }
 
   return { allowed: true, remaining, reason: null };
 }

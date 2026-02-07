@@ -15,6 +15,7 @@ import {
   listTickets,
 } from "./store.js";
 import { isDbEnabled } from "./db.js";
+import { isFirebaseEnabled } from "./firebase.js";
 import {
   loadLocalGames,
   searchLocal,
@@ -49,7 +50,7 @@ const GOOGLE_SERVICE_ACCOUNT_PATH =
 const DRIVE_MODE = process.env.DRIVE_MODE || "local";
 const IS_PROD = process.env.NODE_ENV === "production";
 const USER_STORE_ENABLED = isUserStoreEnabled();
-const DB_ENABLED = isDbEnabled();
+const DB_ENABLED = isDbEnabled() || isFirebaseEnabled();
 const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 120); // requests per 5 minutes
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
 const rateBuckets = new Map();
