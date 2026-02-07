@@ -1,17 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&family=Manrope:wght@500;600;700&family=Sora:wght@500;600;700&display=swap');
 
 :root {
   --bg: #0a0b12;
   --bg-soft: #121320;
   --panel: #15182a;
   --panel-strong: #1f2436;
-  --accent: #f8c250;
-  --accent-soft: #ff9362;
+  --accent: #5d8dff;
+  --accent-soft: #58cfff;
   --mint: #4dd6c4;
   --text: #f5f6ff;
-  --text-dim: #b2b7c6;
-  --stroke: #2a3148;
+  --text-dim: #a8b3cb;
+  --stroke: #2f3f5f;
   --shadow: rgba(5, 8, 14, 0.55);
+  --glass: rgba(8, 18, 36, 0.72);
+  --glass-strong: rgba(7, 15, 30, 0.86);
+  --border-soft: rgba(153, 187, 255, 0.2);
 }
 
 * {
@@ -654,9 +657,9 @@ body {
 
 /* Welcome-theme layout (matches Canva reference) */
 .welcome-theme {
-  font-family: "Baloo 2", "Poppins", system-ui, sans-serif;
+  font-family: "Manrope", "Poppins", system-ui, sans-serif;
   background:
-    linear-gradient(180deg, rgba(8, 10, 16, 0.55), rgba(8, 10, 16, 0.85)),
+    linear-gradient(180deg, rgba(10, 16, 28, 0.55), rgba(4, 8, 16, 0.9)),
     url("assets/welcome-bg.jpeg") center/cover fixed no-repeat;
 }
 
@@ -668,9 +671,30 @@ body {
     radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 2px);
   background-size: 120px 120px, 220px 220px;
   background-position: 0 0, 60px 80px;
-  opacity: 0.4;
+  opacity: 0.16;
   pointer-events: none;
   z-index: 0;
+}
+
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-glow {
+  0%,
+  100% {
+    box-shadow: 0 20px 40px rgba(3, 8, 18, 0.4);
+  }
+  50% {
+    box-shadow: 0 24px 46px rgba(7, 18, 40, 0.48);
+  }
 }
 
 .login-stage {
@@ -681,80 +705,87 @@ body {
 .login-shell {
   width: min(1240px, 96vw);
   min-height: min(640px, 82vh);
-  border-radius: 42px;
-  background: rgba(0, 0, 0, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(5, 10, 20, 0.92), rgba(4, 7, 15, 0.94));
+  border: 1px solid var(--border-soft);
   box-shadow: 0 26px 58px rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(7px);
   display: grid;
   place-items: center;
+  animation: rise-fade 0.45s ease-out both;
 }
 
 .login-stack {
-  width: min(660px, 84vw);
+  width: min(620px, 84vw);
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 
 .login-brand {
-  width: min(540px, 84vw);
-  min-height: 92px;
-  border-radius: 20px;
-  background: rgba(8, 24, 67, 0.95);
+  width: min(500px, 84vw);
+  min-height: 74px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(14, 40, 86, 0.95), rgba(10, 30, 62, 0.96));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   color: #f5f7ff;
   display: grid;
   place-items: center;
-  font-weight: 700;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
   line-height: 1;
-  font-size: clamp(2.1rem, 3.8vw, 3.8rem);
+  font-size: clamp(1.7rem, 2.8vw, 2.5rem);
 }
 
 .login-discord-btn {
-  width: min(670px, 90vw);
-  min-height: 96px;
-  border-radius: 22px;
-  background: rgba(18, 34, 73, 0.96);
+  width: min(620px, 90vw);
+  min-height: 78px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(23, 48, 98, 0.95), rgba(14, 35, 72, 0.95));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   color: #f5f7ff;
   display: grid;
   place-items: center;
-  text-decoration: underline;
-  text-underline-offset: 5px;
-  text-decoration-thickness: 2px;
-  font-weight: 700;
+  text-decoration: none;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   line-height: 1;
-  font-size: clamp(2rem, 3.3vw, 3.5rem);
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  transition: transform 140ms ease, filter 140ms ease, background 140ms ease;
 }
 
 .login-discord-btn:hover {
-  background: rgba(25, 45, 89, 0.96);
+  background: linear-gradient(135deg, rgba(30, 58, 114, 0.95), rgba(17, 43, 87, 0.95));
+  transform: translateY(-1px);
+  filter: saturate(1.08);
 }
 
 .login-alert-title {
   width: min(540px, 84vw);
   min-height: 80px;
-  border-radius: 20px;
+  border-radius: 14px;
   background: rgba(8, 24, 67, 0.95);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   color: #f5f7ff;
   display: grid;
   place-items: center;
-  font-weight: 700;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
   line-height: 1;
-  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
 }
 
 .login-alert-copy {
   color: rgba(245, 247, 255, 0.86);
   text-align: center;
   width: min(620px, 90vw);
-  font-size: clamp(1rem, 1.4vw, 1.4rem);
-  line-height: 1.2;
+  font-size: clamp(0.95rem, 1.1vw, 1.08rem);
+  line-height: 1.35;
 }
 
 .login-actions {
-  width: min(670px, 90vw);
+  width: min(620px, 90vw);
   display: grid;
   gap: 12px;
   justify-items: center;
@@ -763,18 +794,17 @@ body {
 .login-secondary-btn {
   width: min(360px, 78vw);
   min-height: 62px;
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(12, 25, 54, 0.95);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   color: #f5f7ff;
   display: grid;
   place-items: center;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
-  font-weight: 700;
+  text-decoration: none;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
   line-height: 1;
-  font-size: clamp(1.2rem, 2vw, 2rem);
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
 }
 
 .login-secondary-btn:hover {
@@ -782,9 +812,9 @@ body {
 }
 
 .discord-mark {
-  width: 52px;
-  height: 40px;
-  margin-top: 12px;
+  width: 42px;
+  height: 32px;
+  margin-top: 8px;
   color: #5e70ff;
 }
 
@@ -802,14 +832,16 @@ body {
 
 .support-ticket {
   width: min(780px, 94vw);
-  border-radius: 34px;
-  background: rgba(0, 0, 0, 0.93);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--glass-strong), rgba(6, 12, 24, 0.9));
+  border: 1px solid var(--border-soft);
   box-shadow: 0 24px 56px rgba(0, 0, 0, 0.46);
-  padding: 20px 24px 12px;
+  padding: 20px 22px 14px;
   position: relative;
   display: grid;
   gap: 16px;
+  backdrop-filter: blur(6px);
+  animation: rise-fade 0.5s ease-out both;
 }
 
 .support-ticket.hidden {
@@ -820,22 +852,29 @@ body {
   position: absolute;
   top: 8px;
   right: 10px;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   border: none;
-  background: rgba(12, 27, 66, 0.95);
+  background: rgba(12, 27, 66, 0.88);
   color: #ff4f72;
-  font-size: 2.15rem;
+  font-size: 1.7rem;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.support-close:hover {
+  background: rgba(20, 38, 82, 0.94);
+  transform: translateY(-1px);
 }
 
 .support-title {
   margin: 0;
-  font-weight: 700;
-  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.15rem, 1.55vw, 1.45rem);
   line-height: 1.05;
   padding-right: 58px;
 }
@@ -848,29 +887,34 @@ body {
 }
 
 .support-chip {
-  min-height: 58px;
-  border-radius: 18px;
+  min-height: 52px;
+  border-radius: 12px;
   border: none;
-  background: rgba(18, 35, 78, 0.95);
+  background: linear-gradient(135deg, rgba(17, 39, 82, 0.95), rgba(13, 29, 62, 0.95));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   color: var(--text);
-  font-family: "Baloo 2", "Poppins", system-ui, sans-serif;
-  font-size: clamp(1.55rem, 2vw, 2.2rem);
-  font-weight: 700;
+  font-family: "Manrope", "Poppins", system-ui, sans-serif;
+  font-size: clamp(1rem, 1.15vw, 1.14rem);
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
+  transition: background 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
 .support-chip:hover {
-  background: rgba(26, 48, 96, 0.96);
+  background: linear-gradient(135deg, rgba(24, 53, 106, 0.95), rgba(16, 36, 76, 0.95));
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 10px 20px rgba(5, 12, 24, 0.28);
 }
 
 .support-online {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(1rem, 1.25vw, 1.3rem);
-  font-weight: 700;
+  font-size: clamp(0.9rem, 1vw, 1rem);
+  font-weight: 600;
 }
 
 .support-online-dot {
@@ -887,27 +931,29 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 4px 2px;
+  gap: 10px;
+  padding: 8px 8px;
   flex-wrap: wrap;
+  animation: rise-fade 0.42s ease-out both;
 }
 
 .user-pill {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(5, 19, 56, 0.94);
-  border-radius: 16px;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(145deg, rgba(8, 24, 58, 0.9), rgba(8, 18, 40, 0.88));
+  border-radius: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-soft);
   min-width: 320px;
-  min-height: 78px;
+  min-height: 66px;
+  backdrop-filter: blur(8px);
 }
 
 .user-avatar {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
   background:
     radial-gradient(circle at 36% 34%, #ffd9b6 0 22%, #d8a78f 23% 60%, #8f6858 61% 100%);
   box-shadow:
@@ -916,16 +962,16 @@ body {
 }
 
 .user-title {
-  font-size: clamp(1.65rem, 2.2vw, 2.45rem);
+  font-size: clamp(1.08rem, 1.25vw, 1.35rem);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: 0.01em;
 }
 
 .user-sub {
-  font-size: clamp(0.98rem, 1.1vw, 1.3rem);
+  font-size: clamp(0.8rem, 0.9vw, 0.9rem);
   color: rgba(255, 255, 255, 0.9);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.05;
 }
 
@@ -938,29 +984,36 @@ body {
 .pill-nav a {
   text-decoration: none;
   color: var(--text);
-  background: rgba(5, 19, 56, 0.94);
-  min-width: 160px;
-  min-height: 78px;
+  background: linear-gradient(145deg, rgba(8, 22, 52, 0.87), rgba(6, 18, 42, 0.82));
+  min-width: 138px;
+  min-height: 66px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: clamp(1.5rem, 1.9vw, 2.25rem);
+  border-radius: 12px;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
   line-height: 1;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(7px);
+  transition: transform 130ms ease, background 130ms ease, border-color 130ms ease;
 }
 
 .pill-nav a:hover {
-  background: rgba(22, 35, 60, 0.9);
+  background: linear-gradient(145deg, rgba(14, 32, 68, 0.91), rgba(10, 24, 52, 0.86));
+  border-color: rgba(123, 168, 255, 0.46);
+  transform: translateY(-1px);
 }
 
 .pill-nav a.active {
-  background: rgba(34, 54, 92, 0.95);
+  background: linear-gradient(145deg, rgba(24, 49, 100, 0.96), rgba(14, 34, 70, 0.92));
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.16),
-    0 8px 18px rgba(0, 0, 0, 0.25);
+    0 10px 18px rgba(0, 0, 0, 0.28);
+  border-color: rgba(126, 170, 255, 0.52);
 }
 
 .center-stage {
@@ -969,18 +1022,20 @@ body {
   min-height: calc(100vh - 110px);
   display: grid;
   place-items: center;
-  padding: 64px 12px 84px;
+  padding: 46px 12px 70px;
 }
 
 .center-card {
-  background: rgba(0, 0, 0, 0.9);
-  border-radius: 34px;
-  padding: 34px 26px;
+  background: linear-gradient(165deg, var(--glass), rgba(6, 14, 30, 0.86));
+  border-radius: 22px;
+  padding: 28px 22px;
   box-shadow:
     0 22px 40px rgba(0, 0, 0, 0.42),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  min-width: min(640px, 92vw);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: min(620px, 92vw);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(8px);
+  animation: rise-fade 0.52s ease-out both;
 }
 
 .center-card.wide {
@@ -1004,41 +1059,51 @@ body {
 
 .pill-stack {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   justify-items: center;
 }
 
 .pill-note {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
-  max-width: 320px;
+  max-width: 420px;
 }
 
 .pill-title {
-  background: rgba(14, 24, 45, 0.95);
-  padding: 12px 28px;
-  border-radius: 18px;
-  font-size: clamp(2.35rem, 3.3vw, 3.55rem);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  min-width: 340px;
+  background: linear-gradient(135deg, rgba(14, 34, 72, 0.95), rgba(11, 27, 56, 0.95));
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-size: clamp(1.35rem, 1.8vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  min-width: 300px;
   text-align: center;
   line-height: 1;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
 
 .pill-input {
   width: min(500px, 82vw);
-  padding: 16px 20px;
-  border-radius: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
   border: none;
-  background: rgba(19, 30, 55, 0.95);
+  background: linear-gradient(180deg, rgba(17, 33, 66, 0.95), rgba(13, 26, 50, 0.95));
   color: var(--text);
-  text-align: center;
-  font-size: clamp(1.25rem, 1.85vw, 1.95rem);
-  font-weight: 700;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  text-align: left;
+  font-size: clamp(1rem, 1.05vw, 1.08rem);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(166, 197, 255, 0.17);
+  transition: box-shadow 130ms ease, background 130ms ease;
+}
+
+.pill-input:focus {
+  outline: none;
+  background: linear-gradient(180deg, rgba(20, 40, 76, 0.96), rgba(14, 29, 56, 0.95));
+  box-shadow:
+    inset 0 0 0 1px rgba(169, 201, 255, 0.38),
+    0 0 0 2px rgba(87, 145, 255, 0.2);
 }
 
 .pill-input::placeholder {
@@ -1047,9 +1112,9 @@ body {
 
 .search-suggest {
   width: min(500px, 82vw);
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
-  background: rgba(9, 18, 36, 0.96);
+  background: rgba(8, 18, 38, 0.95);
   box-shadow:
     0 16px 32px rgba(0, 0, 0, 0.35),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -1062,7 +1127,7 @@ body {
 .suggest-item {
   border: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(11, 21, 41, 0.95);
+  background: rgba(10, 22, 44, 0.95);
   color: var(--text);
   padding: 10px 14px;
   text-align: left;
@@ -1071,7 +1136,7 @@ body {
   justify-content: space-between;
   gap: 10px;
   cursor: pointer;
-  font-family: "Baloo 2", "Poppins", system-ui, sans-serif;
+  font-family: "Manrope", "Poppins", system-ui, sans-serif;
 }
 
 .suggest-item:last-child {
@@ -1080,12 +1145,12 @@ body {
 
 .suggest-item:hover,
 .suggest-item.active {
-  background: rgba(19, 33, 60, 0.95);
+  background: rgba(19, 38, 70, 0.95);
 }
 
 .suggest-name {
-  font-size: 1.12rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -1096,29 +1161,33 @@ body {
 }
 
 .pill-btn {
-  padding: 14px 26px;
-  border-radius: 18px;
+  padding: 12px 20px;
+  border-radius: 14px;
   border: none;
-  background: rgba(19, 30, 55, 0.95);
+  background: linear-gradient(135deg, rgba(23, 49, 98, 0.95), rgba(14, 35, 72, 0.95));
   color: var(--text);
-  font-weight: 700;
-  min-width: 330px;
-  min-height: 72px;
-  font-size: clamp(1.35rem, 1.8vw, 1.95rem);
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-weight: 600;
+  min-width: 220px;
+  min-height: 54px;
+  font-size: clamp(0.96rem, 1.1vw, 1.08rem);
   line-height: 1;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 0 0 1px rgba(185, 209, 255, 0.24),
+    0 12px 24px rgba(6, 14, 28, 0.32);
+  transition: transform 130ms ease, filter 130ms ease, background 130ms ease;
 }
 
 .pill-btn:hover {
-  background: rgba(28, 42, 74, 0.95);
+  background: linear-gradient(135deg, rgba(31, 64, 122, 0.96), rgba(18, 43, 87, 0.95));
+  transform: translateY(-1px);
+  filter: saturate(1.08);
 }
 
 .pill-btn.link-btn {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 
 .pill-results {
@@ -1134,8 +1203,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: rgba(12, 19, 34, 0.78);
-  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(11, 22, 44, 0.76), rgba(10, 17, 34, 0.78));
+  border-radius: 12px;
   padding: 10px 12px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
@@ -1147,7 +1216,7 @@ body {
 
 .pill-result-title {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .pill-result-sub {
@@ -1159,26 +1228,27 @@ body {
   min-width: 110px;
   min-height: 0;
   padding: 8px 12px;
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   line-height: 1.1;
   text-decoration: none;
 }
 
 .game-card {
   width: min(620px, 92vw);
-  border-radius: 30px;
+  border-radius: 22px;
   overflow: hidden;
-  background: #0a0f1c;
+  background: #0a1122;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft);
   position: relative;
+  animation: rise-fade 0.56s ease-out both;
 }
 
 .game-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px 0;
+  padding: 10px 10px 0;
   background: transparent;
   position: absolute;
   left: 0;
@@ -1188,31 +1258,37 @@ body {
 }
 
 .game-card-title {
-  font-size: clamp(2.1rem, 2.7vw, 2.7rem);
-  font-weight: 700;
-  letter-spacing: 0;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 5px;
+  font-family: "Sora", "Manrope", "Poppins", system-ui, sans-serif;
+  font-size: clamp(1rem, 1.2vw, 1.16rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: rgba(240, 246, 255, 0.95);
 }
 
 .game-card-close {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border: 1px solid rgba(255, 255, 255, 0.09);
-  background: rgba(8, 16, 35, 0.95);
+  background: rgba(9, 21, 45, 0.92);
   color: #ff4f72;
-  border-radius: 12px;
-  font-size: 1.8rem;
+  border-radius: 10px;
+  font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
   font-weight: 700;
+  transition: transform 130ms ease, background 130ms ease;
+}
+
+.game-card-close:hover {
+  background: rgba(16, 33, 68, 0.95);
+  transform: translateY(-1px);
 }
 
 .game-card-media {
   position: relative;
-  min-height: 342px;
+  min-height: 320px;
   overflow: hidden;
   background: #0a0f1c;
   display: grid;
@@ -1226,7 +1302,7 @@ body {
   background:
     linear-gradient(120deg, rgba(9, 12, 22, 0.16), rgba(9, 12, 22, 0.5)),
     var(--game-art) center/cover no-repeat;
-  filter: blur(6px) saturate(0.92);
+  filter: blur(7px) saturate(0.96) contrast(1.02);
   transform: scale(1.05);
 }
 
@@ -1267,32 +1343,39 @@ body {
 
 .game-card-btn {
   border: none;
-  background: rgba(11, 29, 68, 0.95);
+  background: linear-gradient(135deg, rgba(22, 49, 99, 0.95), rgba(15, 36, 73, 0.95));
   color: var(--text);
-  padding: 10px 24px;
-  border-radius: 16px;
-  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  font-family: "Baloo 2", "Poppins", system-ui, sans-serif;
+  box-shadow:
+    inset 0 0 0 1px rgba(176, 203, 255, 0.2),
+    0 9px 20px rgba(5, 12, 25, 0.28);
+  font-family: "Manrope", "Poppins", system-ui, sans-serif;
   line-height: 1;
+  transition: transform 130ms ease, background 130ms ease, filter 130ms ease;
+}
+
+.game-card-btn:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.08);
 }
 
 .game-card-btn.primary {
-  min-width: 210px;
-  min-height: 54px;
-  font-size: 2rem;
+  min-width: 172px;
+  min-height: 46px;
+  font-size: 1rem;
   justify-self: center;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 
 .game-card-btn.ghost {
-  background: rgba(11, 29, 68, 0.88);
-  font-size: 1.1rem;
+  background: linear-gradient(135deg, rgba(19, 41, 82, 0.9), rgba(14, 31, 64, 0.9));
+  font-size: 0.82rem;
   padding: 10px 12px;
-  min-width: 124px;
-  min-height: 42px;
+  min-width: 108px;
+  min-height: 38px;
   justify-self: end;
 }
 
@@ -1304,7 +1387,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  background: rgba(10, 18, 38, 0.95);
+  background: rgba(10, 21, 44, 0.92);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
@@ -1338,6 +1421,26 @@ body {
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pillbar,
+  .center-card,
+  .support-ticket,
+  .game-card,
+  .login-shell {
+    animation: none;
+  }
+
+  .pill-nav a,
+  .pill-btn,
+  .support-chip,
+  .game-card-btn,
+  .game-card-close,
+  .login-discord-btn,
+  .support-close {
+    transition: none;
+  }
+}
+
 .discord-icon::before {
   content: "";
   width: 22px;
@@ -1358,7 +1461,7 @@ body {
   .login-shell {
     width: min(96vw, 560px);
     min-height: min(500px, 88vh);
-    border-radius: 28px;
+    border-radius: 20px;
   }
 
   .login-stack {
@@ -1369,15 +1472,15 @@ body {
   .login-brand {
     width: min(88vw, 430px);
     min-height: 70px;
-    border-radius: 16px;
-    font-size: clamp(1.8rem, 8.5vw, 2.8rem);
+    border-radius: 12px;
+    font-size: clamp(1.4rem, 7.5vw, 2rem);
   }
 
   .login-alert-title {
     width: min(88vw, 430px);
     min-height: 64px;
-    border-radius: 16px;
-    font-size: clamp(1.6rem, 7.5vw, 2.4rem);
+    border-radius: 12px;
+    font-size: clamp(1.3rem, 6.6vw, 1.8rem);
   }
 
   .login-alert-copy {
@@ -1388,15 +1491,15 @@ body {
   .login-discord-btn {
     width: min(90vw, 460px);
     min-height: 78px;
-    border-radius: 18px;
-    font-size: clamp(1.7rem, 7.7vw, 2.6rem);
+    border-radius: 12px;
+    font-size: clamp(1.1rem, 5.4vw, 1.4rem);
   }
 
   .login-secondary-btn {
     width: min(88vw, 380px);
     min-height: 54px;
-    border-radius: 14px;
-    font-size: clamp(1.05rem, 5.2vw, 1.5rem);
+    border-radius: 12px;
+    font-size: clamp(0.95rem, 4.5vw, 1.15rem);
   }
 
   .discord-mark {
@@ -1411,7 +1514,7 @@ body {
 
   .support-ticket {
     width: min(96vw, 620px);
-    border-radius: 24px;
+    border-radius: 18px;
     padding: 16px 14px 10px;
     gap: 12px;
   }
@@ -1426,7 +1529,7 @@ body {
   }
 
   .support-title {
-    font-size: clamp(1.2rem, 5.2vw, 1.6rem);
+    font-size: clamp(1rem, 4.2vw, 1.2rem);
     padding-right: 42px;
   }
 
@@ -1438,8 +1541,8 @@ body {
 
   .support-chip {
     min-height: 48px;
-    border-radius: 14px;
-    font-size: clamp(1.1rem, 6vw, 1.45rem);
+    border-radius: 12px;
+    font-size: clamp(0.95rem, 4.3vw, 1.05rem);
   }
 
   .support-online {
@@ -1457,24 +1560,24 @@ body {
   }
 
   .user-title {
-    font-size: 1.4rem;
+    font-size: 1rem;
   }
 
   .user-sub {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .pill-nav a {
     min-width: 118px;
     min-height: 56px;
-    font-size: 1.3rem;
+    font-size: 0.95rem;
     border-radius: 12px;
   }
 
   .center-card {
     min-width: min(95vw, 520px);
-    padding: 24px 16px;
-    border-radius: 24px;
+    padding: 20px 14px;
+    border-radius: 18px;
   }
 
   .center-card.results-mode {
@@ -1483,13 +1586,13 @@ body {
   }
 
   .pill-title {
-    min-width: 250px;
-    font-size: 2.15rem;
+    min-width: 230px;
+    font-size: 1.32rem;
   }
 
   .pill-input {
     width: min(90vw, 440px);
-    font-size: 1.2rem;
+    font-size: 0.95rem;
   }
 
   .search-suggest {
@@ -1505,14 +1608,14 @@ body {
   }
 
   .pill-btn {
-    min-width: 210px;
-    min-height: 56px;
-    font-size: 1.2rem;
+    min-width: 190px;
+    min-height: 48px;
+    font-size: 0.92rem;
   }
 
   .game-card {
     width: min(95vw, 620px);
-    border-radius: 22px;
+    border-radius: 18px;
   }
 
   .game-card-media {
@@ -1520,13 +1623,13 @@ body {
   }
 
   .game-card-title {
-    font-size: 1.7rem;
+    font-size: 0.95rem;
   }
 
   .game-card-btn.primary {
-    min-width: 160px;
+    min-width: 140px;
     min-height: 46px;
-    font-size: 1.5rem;
+    font-size: 0.94rem;
   }
 
   .game-card-btn.ghost {
