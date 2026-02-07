@@ -1,0 +1,4 @@
+run = "if [ ! -d node_modules ]; then npm install; fi; PORT=3000 HOST=0.0.0.0 npm start"
+
+[deployment]
+run = ["npm", "start"]

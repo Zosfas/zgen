@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discord Login</title>
+</head>
+<body>
+  <script>
+    const user = { id: "demo", username: "DemoUser", discriminator: "0000", avatar: null };
+    localStorage.setItem("demoUser", JSON.stringify(user));
+    window.location.href = "/welcome-user.html";
+  </script>
+  <p>Redirecting...</p>
+</body>
+</html>

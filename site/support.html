@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam Drive Vault | Support</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="welcome-theme">
+  <div class="snow-layer"></div>
+
+  <header class="pillbar">
+    <div class="user-pill">
+      <div class="user-avatar"></div>
+      <div>
+        <div class="user-title">Welcome [USER]</div>
+        <div class="user-sub">[uses] uses left today</div>
+      </div>
+    </div>
+
+    <nav class="pill-nav">
+      <a href="library.html">Store</a>
+      <a href="giveaways.html">Giveaways</a>
+      <a class="active" href="support.html">Support</a>
+      <a href="discord.html">Discord</a>
+      <a href="terms.html">ToS</a>
+    </nav>
+  </header>
+
+  <main class="center-stage support-stage">
+    <section class="support-ticket">
+      <button class="support-close" data-action="support-close" aria-label="Close">x</button>
+      <h1 class="support-title">Create a ticket: what do u need help with</h1>
+
+      <div class="support-grid">
+        <button class="support-chip" data-action="support">Game file</button>
+        <button class="support-chip" data-action="support">Site not working</button>
+        <button class="support-chip" data-action="support">Error on launch</button>
+        <button class="support-chip" data-action="support">Cant join giveaway</button>
+        <button class="support-chip" data-action="support">Online</button>
+        <button class="support-chip" data-action="support">Others</button>
+      </div>
+
+      <div class="support-online">
+        <span class="support-online-dot" aria-hidden="true"></span>
+        <span>Online supports: amount</span>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

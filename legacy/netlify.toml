@@ -1,0 +1,52 @@
+[build]
+  publish = "site"
+  functions = "netlify/functions"
+  command = ""
+
+[[redirects]]
+  from = "/api/me"
+  to = "/.netlify/functions/api-me"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/search"
+  to = "/.netlify/functions/api-search"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/download"
+  to = "/.netlify/functions/api-download"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/steam-app"
+  to = "/.netlify/functions/api-steam-app"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth/discord/callback"
+  to = "/.netlify/functions/auth-discord-callback"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth/discord"
+  to = "/.netlify/functions/auth-discord"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth/demo"
+  to = "/.netlify/functions/auth-demo"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
+  force = true

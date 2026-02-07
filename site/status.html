@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam Drive Vault | Status</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="welcome-theme">
+  <div class="snow-layer"></div>
+
+  <header class="pillbar">
+    <div class="user-pill">
+      <div class="user-avatar"></div>
+      <div>
+        <div class="user-title">Welcome [USER]</div>
+        <div class="user-sub">[uses] uses left today</div>
+      </div>
+    </div>
+
+    <nav class="pill-nav">
+      <a href="library.html">Store</a>
+      <a href="giveaways.html">Giveaways</a>
+      <a href="support.html">Support</a>
+      <a href="discord.html">Discord</a>
+      <a href="terms.html">ToS</a>
+    </nav>
+  </header>
+
+  <main class="center-stage">
+    <div class="center-card wide">
+      <div class="pill-stack">
+        <div class="pill-title">System Status</div>
+        <div class="pill-note">Connection mode and service status.</div>
+
+        <div class="pill-results">
+          <div class="pill-result">
+            <div>
+              <div class="pill-result-title">Authentication</div>
+              <div class="pill-result-sub hint">Waiting for status...</div>
+            </div>
+            <div class="status-dot">Offline</div>
+          </div>
+          <div class="pill-result">
+            <div>
+              <div class="pill-result-title">Search Provider</div>
+              <div class="pill-result-sub">API mode uses server search. Static mode uses local games data.</div>
+            </div>
+          </div>
+          <div class="pill-result">
+            <div>
+              <div class="pill-result-title">Download Provider</div>
+              <div class="pill-result-sub">API mode streams Drive files. Static mode generates demo files.</div>
+            </div>
+          </div>
+        </div>
+
+        <a class="pill-btn link-btn" href="setup.html">Open Setup Checklist</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

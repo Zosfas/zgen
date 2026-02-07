@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam Drive Vault | Downloads</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="welcome-theme">
+  <div class="snow-layer"></div>
+
+  <header class="pillbar">
+    <div class="user-pill">
+      <div class="user-avatar"></div>
+      <div>
+        <div class="user-title">Welcome [USER]</div>
+        <div class="user-sub">[uses] uses left today</div>
+      </div>
+    </div>
+
+    <nav class="pill-nav">
+      <a href="library.html">Store</a>
+      <a href="giveaways.html">Giveaways</a>
+      <a href="support.html">Support</a>
+      <a href="discord.html">Discord</a>
+      <a href="terms.html">ToS</a>
+    </nav>
+  </header>
+
+  <main class="center-stage">
+    <div class="center-card wide">
+      <div class="pill-stack">
+        <div class="pill-title">Download History</div>
+        <div class="pill-note">Recent searches and downloaded files are stored in your browser.</div>
+        <button class="pill-btn pill-small" data-action="clear-history">Clear History</button>
+
+        <div class="pill-results" id="search-history"></div>
+        <div class="pill-results" id="download-history"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
